@@ -9,7 +9,7 @@ defmodule Qmicli do
     device = Keyword.get(opts, :device)
     apn = Keyword.get(opts, :apn)
 
-    priv_path = :code.priv_dir(:nerves_network)
+    priv_path = :code.priv_dir(:vibeq_modem)
     port_path = '#{priv_path}/qmicli_wrapper'
 
     args = [
