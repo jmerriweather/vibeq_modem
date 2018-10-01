@@ -1,0 +1,9 @@
+{application,vibeq_modem,
+             [{applications,[kernel,stdlib,elixir,logger]},
+              {description,"vibeq_modem"},
+              {modules,['Elixir.VibeqModem','Elixir.VibeqModem.Application',
+                        'Elixir.VibeqModem.GpioSupervisor',
+                        'Elixir.VibeqModem.ModemWorker']},
+              {registered,[]},
+              {vsn,"0.1.0"},
+              {mod,{'Elixir.VibeqModem.Application',[]}}]}.
