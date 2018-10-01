@@ -4,7 +4,9 @@ defmodule VibeqModem.ModemWorker do
   alias ElixirALE.GPIO
 
   def start_link(opts) do
+    IO.puts("Options: #{inspect opts}")
     registry = Keyword.pop(opts, :registry, VibeqModem.Registry)
+    IO.puts("Registry: #{inspect registry}")
     GenServer.start_link(__MODULE__, registry, opts)
   end
 
