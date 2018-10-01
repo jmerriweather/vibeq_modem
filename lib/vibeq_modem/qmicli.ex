@@ -31,7 +31,7 @@ defmodule Qmicli do
         {:line, 256}
       ])
 
-    {:ok, %{ifname: ifname, port: port}}
+    {:ok, %{device: device, apn: apn, port: port}}
   end
 
   def terminate(_reason, state) do
