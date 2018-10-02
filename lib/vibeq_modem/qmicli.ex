@@ -29,7 +29,7 @@ defmodule VibeqModem.Qmicli do
   end
 
   def handle_continue(:wds_start_network, state = %{device: device, apn: apn}) do
-    exec_command("qmicli", ["--device", device, "--wds-start-network", "apn='#{apn}'", "--client-no-release-cid"], )
+    exec_command("qmicli", ["--device", device, "--wds-start-network", "apn='#{apn}'", "--client-no-release-cid"])
 
     {:noreply, state}
   end
