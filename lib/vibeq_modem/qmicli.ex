@@ -1,6 +1,8 @@
 defmodule VibeqModem.Qmicli do
   use GenServer
 
+  require Logger
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
   end
@@ -16,13 +18,22 @@ defmodule VibeqModem.Qmicli do
     device = Keyword.get(opts, :device)
     apn = Keyword.get(opts, :apn)
 
-    #System.cmd("qmicli", ["--device", "/dev/cdc-wdm0", "--set-expected-data-format", "raw-ip"], stderr_to_stdout: true)
-    #System.cmd("qmicli", ["--device", "/dev/cdc-wdm0", "--set-expected-data-format", "raw-ip"], stderr_to_stdout: true)
+    {:ok, _} = Registry.register(Nerves.NetworkInterface, "wwan0", [])
 
-    {:ok, %{device: device, apn: apn}, {:continue, :set_expected_data_format}}
+    {:ok, %{device: device, apn: apn, ifname: "wwan0"}}
   end
 
-  def handle_continue(:set_expected_data_format, state = %{device: device, apn: apn}) do
+  # Handle Network Interface events coming in from SystemRegistry.
+  def handle_info({Nerves.NetworkInterface, :ifadded, %{ifname: ifname}}, %{ifname: ifname} = state) do
+    Logger.debug("Qmicli(#{ifname}) network_interface ifadded")
+    {:noreply, state, {:continue, :set_expected_data_format}}
+  end
+
+  def handle_info({Nerves.NetworkInterface, _, _}, state) do
+    {:noreply, state}
+  end
+
+  def handle_continue(:set_expected_data_format, state = %{device: device}) do
     exec_command("qmicli", ["--device", device, "--set-expected-data-format", "raw-ip"], state)
 
     {:noreply, state, {:continue, :wds_start_network}}
@@ -31,10 +42,16 @@ defmodule VibeqModem.Qmicli do
   def handle_continue(:wds_start_network, state = %{device: device, apn: apn}) do
     exec_command("qmicli", ["--device", device, "--wds-start-network", "apn='#{apn}'", "--client-no-release-cid"], state)
 
+    {:noreply, state, {:continue, :start_dhcp}}
+  end
+
+  def handle_continue(:start_dhcp, state = %{ifname: ifname}) do
+    Nerves.Network.setup ifname, ipv4_address_method: :dhcp
+
     {:noreply, state}
   end
 
-  def terminate(_reason, state) do
+  def terminate(_reason, _state) do
 
     :ok
   end
