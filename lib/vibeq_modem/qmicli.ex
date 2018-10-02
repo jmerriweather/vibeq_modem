@@ -23,13 +23,13 @@ defmodule VibeqModem.Qmicli do
   end
 
   def handle_continue(:set_expected_data_format, state = %{device: device, apn: apn}) do
-    exec_command("qmicli", ["--device", device, "--set-expected-data-format", "raw-ip"])
+    exec_command("qmicli", ["--device", device, "--set-expected-data-format", "raw-ip"], state)
 
     {:noreply, state, {:continue, :wds_start_network}}
   end
 
   def handle_continue(:wds_start_network, state = %{device: device, apn: apn}) do
-    exec_command("qmicli", ["--device", device, "--wds-start-network", "apn='#{apn}'", "--client-no-release-cid"])
+    exec_command("qmicli", ["--device", device, "--wds-start-network", "apn='#{apn}'", "--client-no-release-cid"], state)
 
     {:noreply, state}
   end
@@ -39,12 +39,10 @@ defmodule VibeqModem.Qmicli do
     :ok
   end
 
-  def exec_command(cmd, params, opts \\ []) do
-    opts = Keyword.merge([stderr_to_stdout: true], opts)
+  def exec_command(cmd, params, state) do
+    {response, _} = System.cmd(cmd, params, stderr_to_stdout: true)
 
-    {response, _} = System.cmd(cmd, params, opts)
-
-    handle_qmicli(response)
+    handle_qmicli(response, state)
   end
 
   def handle_qmicli(message, state) do
